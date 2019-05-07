@@ -1,66 +1,7 @@
-window.onresize = function () {
-    fitCanvasSize();
-};
-
-window.addEventListener("load", init);
-
-function fitCanvasSize() {
-    let canvas = document.getElementById("nodeEditor");
-    canvas.setAttribute("width", window.innerWidth);
-    canvas.setAttribute("height", window.innerHeight);
-}
-
-function init() {
-    fitCanvasSize();
-
-    let stage = new createjs.Stage("nodeEditor");
-    stage.addEventListener("click", (evt) => {
-        console.log(stage.mouseX, stage.mouseY);
-    });
-    createjs.Ticker.framerate = 60;
-
-    let node_controller = new NodesController(stage);
-
-    let addMessageNode = new createjs.DOMElement(document.getElementById("AddMessageNode"));
-    addMessageNode.htmlElement.onclick = function() {
-        node_controller.addMessageNode(stage.mouseX+stage.regX-300, stage.mouseY+30);
-    };
-    let addBranchNode = new createjs.DOMElement(document.getElementById("AddBranchNode"));
-    addBranchNode.y = 1000;
-    addBranchNode.htmlElement.onclick = function() {
-        node_controller.addBranchNode(stage.mouseX+stage.regX-300, stage.mouseY+30);
-    };
-
-    createjs.Ticker.addEventListener("tick", stage);
-    createjs.Ticker.addEventListener("tick", handleTick);
-    function handleTick() {
-        node_controller.updateAll();
-    }
-}
-
-nodes = [];
-function getUuidByObject(obj) {
-    let uuid = null;
-    nodes.forEach((node) => {
-        if (node.input === obj) {
-            uuid = node.UUID;
-        }
-    });
-    return uuid;
-}
-function getObjectByUuid(uuid) {
-    let object = null;
-    nodes.forEach((node) => {
-        if (node.UUID === uuid) {
-            object = node;
-        }
-    });
-    return object;
-}
-
 class NodesController {
-    constructor(stage) {
+    constructor(stage, nodes) {
         this.stage = stage;
+        this.nodes = nodes;
         this.line = new createjs.Shape();
         this.stage.addChild(this.line);
 
@@ -85,11 +26,11 @@ class NodesController {
     }
 
     registerNode(node) {
-        nodes.push(node);
+        this.nodes.push(node);
     }
 
     updateAll() {
-        nodes.forEach((node) => {
+        this.nodes.forEach((node) => {
             node.update();
         })
     }
@@ -156,6 +97,8 @@ class MessageNode {
                 }
             }
         });
+
+        createjs.Ticker.addEventListener("tick", this.update);
     }
 
     update() {
@@ -238,6 +181,8 @@ class BranchNode {
                 }
             }
         });
+
+        createjs.Ticker.addEventListener("tick", this.update);
     }
 
     update() {
@@ -299,19 +244,21 @@ class StartNode {
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
-            drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
+            app.drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
             let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
             if (under_object.length >= 1) {
                 let object = under_object[0];
-                let uuid = getUuidByObject(object);
+                let uuid = app.getUuidByObject(object);
                 if (uuid !== null && this.UUID !== uuid) {
                     this.nextNodeUUID = uuid;
                 }
             }
         });
+
+        createjs.Ticker.addEventListener("tick", () => {this.update()});
     }
 
     update() {
@@ -321,10 +268,10 @@ class StartNode {
         this.output.x = (this.x - this.sizeX*0.24);
         this.output.y = (this.y + this.sizeY*0.50);
 
-        let nextNode = getObjectByUuid(this.nextNodeUUID);
+        let nextNode = app.getObjectByUuid(this.nextNodeUUID);
         if (nextNode !== null) {
             this.line.graphics.clear();
-            drawLine(this.x, this.y, nextNode.x, nextNode.y-20, this.line);
+            app.drawLine(this.x, this.y, nextNode.x, nextNode.y-20, this.line);
         }
     }
 }
@@ -356,12 +303,13 @@ class EndNode{
         });
         this.part_main.addEventListener("pressup", (evt) => {
             console.log(this.UUID);
-            console.log(this.nextNodeUUID);
         });
 
         this.input.addEventListener("pressmove", (evt) => {
             console.log("input");
         });
+
+        createjs.Ticker.addEventListener("tick", () => {this.update()});
     }
 
     update() {
@@ -372,6 +320,76 @@ class EndNode{
         this.input.y = (this.y - this.sizeY*0.95);
     }
 
+}
+
+let app = new Vue({
+    el: '#app',
+    data: {
+        nodes: null,
+        message: "hello",
+        stage: null,
+        node_controller: null,
+    },
+    created: () => {
+        createjs.Ticker.framerate = 60;
+    },
+    mounted: () => {
+        this.stage = new createjs.Stage("nodeEditor");
+        this.nodes = [];
+        createjs.Ticker.addEventListener("tick", this.stage);
+        this.node_controller = new NodesController(this.stage, this.nodes);
+    },
+    methods: {
+        getUuidByObject: (obj) => {
+            let uuid = null;
+            this.nodes.forEach((node) => {
+                if (node.input === obj) {
+                    uuid = node.UUID;
+                }
+            });
+            return uuid;
+        },
+        getObjectByUuid: (uuid) => {
+            let object = null;
+            this.nodes.forEach((node) => {
+                if (node.UUID === uuid) {
+                    object = node;
+                }
+            });
+            return object;
+        },
+        drawLine: (x1, y1, x2, y2, line) => {
+            line.graphics.beginStroke("#768cff");
+            line.graphics.setStrokeStyle(3);
+            if (y1 <= y2) {
+                line.graphics.moveTo(x1, y1+25);
+                //line.graphics.lineTo(x1, y1+(y2-y1)/2);
+                //line.graphics.lineTo(x2, y1+(y2-y1)/2);
+                line.graphics.lineTo(x2, y2);
+            } else {
+                line.graphics.moveTo(x1, y1);
+                line.graphics.lineTo(x1, y1 + 50);
+                line.graphics.lineTo(x1 + (x2 - x1) / 2, y1 + 50);
+                line.graphics.lineTo(x1 + (x2 - x1) / 2, y2 - 50);
+                line.graphics.lineTo(x2, y2 - 50);
+                line.graphics.lineTo(x2, y2);
+            }
+        }
+    }
+});
+
+window.onresize = function () {
+    fitCanvasSize();
+};
+
+window.onload = function () {
+    fitCanvasSize();
+};
+
+function fitCanvasSize() {
+    let canvas = document.getElementById("nodeEditor");
+    canvas.setAttribute("width", window.innerWidth);
+    canvas.setAttribute("height", window.innerHeight);
 }
 
 function generateUuid() {
@@ -393,20 +411,3 @@ function snap(num, snap=15) {
     return Math.round(num/snap)*snap;
 }
 
-function  drawLine(x1, y1, x2, y2, line) {
-    line.graphics.beginStroke("#768cff");
-    line.graphics.setStrokeStyle(3);
-    if (y1 <= y2) {
-        line.graphics.moveTo(x1, y1+25);
-        //line.graphics.lineTo(x1, y1+(y2-y1)/2);
-        //line.graphics.lineTo(x2, y1+(y2-y1)/2);
-        line.graphics.lineTo(x2, y2);
-    } else {
-        line.graphics.moveTo(x1, y1);
-        line.graphics.lineTo(x1, y1+50);
-        line.graphics.lineTo(x1+(x2-x1)/2, y1+50);
-        line.graphics.lineTo(x1+(x2-x1)/2, y2-50);
-        line.graphics.lineTo(x2, y2-50);
-        line.graphics.lineTo(x2, y2);
-    }
-}
