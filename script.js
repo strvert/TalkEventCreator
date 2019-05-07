@@ -164,6 +164,9 @@ class BranchNode {
         this.output.graphics.drawRoundRect(0, 0, this.sizeX*0.2, this.sizeY*0.25, 3);
         this.stage.addChild(this.output);
 
+        this.part_main.addEventListener("pressdown", (evt) => {
+            app.selected_node = this;
+        });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
             this.y = snap(this.stage.mouseY) + this.stage.regY;
@@ -340,6 +343,7 @@ let app = new Vue({
     data: {
         nodes: null,
         stage: null,
+        selected_node: null,
         node_controller: null,
     },
     created: () => {
@@ -391,6 +395,15 @@ let app = new Vue({
                 line.graphics.lineTo(x1 + (x2 - x1) / 2, y2 - 50);
                 line.graphics.lineTo(x2, y2 - 50);
                 line.graphics.lineTo(x2, y2);
+            }
+        }
+    },
+    computed: {
+        selected_node_name: () => {
+            if (this.selected_node !== null) {
+                return this.selected_node.type;
+            } else {
+                return "";
             }
         }
     }

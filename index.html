@@ -11,8 +11,11 @@
     <div id="app">
         <canvas id="nodeEditor"></canvas>
         <div id="prop">
+            <div>control</div>
             <button v-on:click="addMessageNode">AddMessageNode</button>
             <button v-on:click="addBranchNode">AddBranchNode</button>
+            <HR>
+            <div>{{ selected_node_name }}</div>
         </div>
     </div>
     <script src="script.js"></script>
