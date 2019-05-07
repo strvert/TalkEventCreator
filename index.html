@@ -21,17 +21,19 @@
             <template v-if="selected_node_type === 'message'">
                 Text:
                 <textarea class="text_area" v-model="message_node_text" @input="changeMessage"></textarea>
+                <button v-on:click="deleteNode">deleteNode</button>
             </template>
             <template v-if="selected_node_type === 'branch'">
                 <div v-for="n in 4">
                     {{ n }}
                     <textarea class="text_area" v-model="branch_node_choices[n-1]" @input="changeChoices"></textarea>
                 </div>
+                <button v-on:click="deleteNode">deleteNode</button>
             </template>
             <template v-if="selected_node_type === 'event'">
                 event
+                <button v-on:click="deleteNode">deleteNode</button>
             </template>
-            <button v-on:click="deleteNode">deleteNode</button>
         </div>
     </div>
     <script src="scripts/main.js"></script>

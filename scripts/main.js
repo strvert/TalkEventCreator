@@ -14,9 +14,9 @@ window.onchange = function () {
 class NodesController {
     constructor(stage, nodes) {
         this.stage = stage;
-        this.nodes = nodes;
         this.line = new createjs.Shape();
         this.stage.addChild(this.line);
+        this.nodes = nodes;
 
         this.addStartNode(500, 100);
         this.addEndNode(500, 500);
@@ -43,8 +43,7 @@ class NodesController {
     }
 
     registerNode(node) {
-        this.
-        nodes.push(node);
+        this.nodes.push(node);
     }
 
     updateAll() {
@@ -150,6 +149,13 @@ class MessageNode {
         this.stage.removeChild(this.input);
         this.stage.removeChild(this.output);
         this.stage.removeChild(this.line);
+    }
+
+    breakLink(uuid) {
+        if (this.nextNodeUUID === uuid) {
+            this.line.graphics.claer();
+            this.nextNodeUUID = null;
+        }
     }
 }
 
@@ -259,6 +265,15 @@ class BranchNode {
             this.stage.removeChild(this.lines[i]);
         }
     }
+
+    breakLink(uuid) {
+        this.nextNodesUUID.forEach((nextUuid, i) => {
+            if (nextUuid === uuid) {
+                this.lines[i].graphics.clear();
+                this.nextNodesUUID[i] = null;
+            }
+        });
+    }
 }
 
 class EventNode {
@@ -357,6 +372,13 @@ class EventNode {
         this.stage.removeChild(this.output);
         this.stage.removeChild(this.line);
     }
+
+    breakLink(uuid) {
+        if (this.nextNodeUUID === uuid) {
+            this.line.graphics.clear();
+            this.nextNodeUUID = null;
+        }
+    }
 }
 
 class StartNode {
@@ -440,6 +462,13 @@ class StartNode {
         this.stage.removeChild(this.output);
         this.stage.removeChild(this.line);
     }
+
+    breakLink(uuid) {
+        if (this.nextNodeUUID === uuid) {
+            this.line.graphics.clear();
+            this.nextNodeUUID = null;
+        }
+    }
 }
 
 class EndNode{
@@ -494,6 +523,9 @@ class EndNode{
     destroy() {
         this.stage.removeChild(this.part_main);
         this.stage.removeChild(this.input);
+    }
+
+    breakLink(uuid) {
     }
 }
 
@@ -584,6 +616,9 @@ let app = new Vue({
             console.log(obj);
             if (obj !== null) {
                 obj.destroy();
+                this.nodes.forEach((node) => {
+                    node.breakLink(uuid);
+                });
             }
 
             console.log(this.nodes);
@@ -592,6 +627,7 @@ let app = new Vue({
                     return n;
                 }
             });
+            this.node_controller.nodes = this.nodes;
             console.log(this.nodes);
         },
         deleteNode: function() {
