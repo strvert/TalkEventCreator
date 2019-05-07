@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" xmlns:v-on="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>TalkEventCreator</title>
@@ -11,9 +11,8 @@
     <div id="app">
         <canvas id="nodeEditor"></canvas>
         <div id="prop">
-            {{ message }}
-            <input id="AddMessageNode" type="button" value="AddMessageNode">
-            <input id="AddBranchNode" type="button" value="AddBranchNode">
+            <button v-on:click="addMessageNode">AddMessageNode</button>
+            <button v-on:click="addBranchNode">AddBranchNode</button>
         </div>
     </div>
     <script src="script.js"></script>

@@ -1,3 +1,16 @@
+function fitCanvas() {
+    let canvas = document.getElementById("nodeEditor");
+    canvas.setAttribute("height", window.innerHeight);
+    canvas.setAttribute("width", window.innerWidth);
+}
+
+window.onload = function () {
+    fitCanvas();
+};
+window.onchange = function () {
+    fitCanvas();
+}
+
 class NodesController {
     constructor(stage, nodes) {
         this.stage = stage;
@@ -85,20 +98,20 @@ class MessageNode {
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
-            drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
+            app.drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
             let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
             if (under_object.length >= 1) {
-                let uuid = getUuidByObject(under_object[0]);
+                let uuid = app.getUuidByObject(under_object[0]);
                 if (uuid !== null && uuid !== this.UUID) {
                     this.nextNodeUUID = uuid;
                 }
             }
         });
 
-        createjs.Ticker.addEventListener("tick", this.update);
+        createjs.Ticker.addEventListener("tick", () => {this.update()});
     }
 
     update() {
@@ -111,10 +124,10 @@ class MessageNode {
         this.output.x = (this.x - this.sizeX*0.1);
         this.output.y = (this.y + this.sizeY*0.50);
 
-        let nextNode = getObjectByUuid(this.nextNodeUUID);
+        let nextNode = app.getObjectByUuid(this.nextNodeUUID);
         if (nextNode !== null) {
             this.line.graphics.clear();
-            drawLine(this.x, this.y, nextNode.x, nextNode.y-20, this.line);
+            app.drawLine(this.x, this.y, nextNode.x, nextNode.y-20, this.line);
         }
     }
 
@@ -169,20 +182,20 @@ class BranchNode {
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
-            drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
+            app.drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
             let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
             if (under_object.length >= 1) {
-                let uuid = getUuidByObject(under_object[0]);
+                let uuid = app.getUuidByObject(under_object[0]);
                 if (uuid !== null && uuid !== this.UUID) {
                     this.nextNodeUUID = uuid;
                 }
             }
         });
 
-        createjs.Ticker.addEventListener("tick", this.update);
+        createjs.Ticker.addEventListener("tick", () => {this.update()});
     }
 
     update() {
@@ -195,10 +208,10 @@ class BranchNode {
         this.output.x = (this.x - this.sizeX*0.1);
         this.output.y = (this.y + this.sizeY*0.50);
 
-        let nextNode = getObjectByUuid(this.nextNodeUUID);
+        let nextNode = app.getObjectByUuid(this.nextNodeUUID);
         if (nextNode !== null) {
             this.line.graphics.clear();
-            drawLine(this.x, this.y, nextNode.x, nextNode.y-20, this.line);
+            app.drawLine(this.x, this.y, nextNode.x, nextNode.y-20, this.line);
         }
     }
 
@@ -326,7 +339,6 @@ let app = new Vue({
     el: '#app',
     data: {
         nodes: null,
-        message: "hello",
         stage: null,
         node_controller: null,
     },
@@ -340,6 +352,12 @@ let app = new Vue({
         this.node_controller = new NodesController(this.stage, this.nodes);
     },
     methods: {
+        addMessageNode: () => {
+            this.node_controller.addMessageNode(this.stage.mouseX-500, this.stage.mouseY+50);
+        },
+        addBranchNode: () => {
+            this.node_controller.addBranchNode(this.stage.mouseX-500, this.stage.mouseY+50);
+        },
         getUuidByObject: (obj) => {
             let uuid = null;
             this.nodes.forEach((node) => {
@@ -377,21 +395,6 @@ let app = new Vue({
         }
     }
 });
-
-window.onresize = function () {
-    fitCanvasSize();
-};
-
-window.onload = function () {
-    fitCanvasSize();
-};
-
-function fitCanvasSize() {
-    let canvas = document.getElementById("nodeEditor");
-    canvas.setAttribute("width", window.innerWidth);
-    canvas.setAttribute("height", window.innerHeight);
-}
-
 function generateUuid() {
     let chars = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".split("");
     for (let i = 0, len = chars.length; i < len; i++) {
