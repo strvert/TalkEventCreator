@@ -111,11 +111,11 @@ class MessageNode {
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
-            app.drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
+            app.drawLine(this.x, this.y, this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY, this.line);
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
-            let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
+            let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
             if (under_object.length >= 1) {
                 let uuid = app.getUuidByObject(under_object[0]);
                 if (uuid !== null && uuid !== this.UUID) {
@@ -153,7 +153,7 @@ class MessageNode {
 
     breakLink(uuid) {
         if (this.nextNodeUUID === uuid) {
-            this.line.graphics.claer();
+            this.line.graphics.clear();
             this.nextNodeUUID = null;
         }
     }
@@ -204,11 +204,11 @@ class BranchNode {
             });
             this.outputs[i].addEventListener("pressmove", (evt) => {
                 this.lines[i].graphics.clear();
-                app.drawLine(this.x-(this.sizeX*this.offsetsX[i])+(this.sizeX*0.1), this.y, this.stage.mouseX, this.stage.mouseY, this.lines[i]);
+                app.drawLine(this.x-(this.sizeX*this.offsetsX[i])+(this.sizeX*0.1), this.y, this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY, this.lines[i]);
             });
             this.outputs[i].addEventListener("pressup", (evt) => {
                 this.lines[i].graphics.clear();
-                let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
+                let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
                 if (under_object.length >= 1) {
                     let uuid = app.getUuidByObject(under_object[0]);
                     if (uuid !== null && uuid !== this.UUID) {
@@ -333,11 +333,11 @@ class EventNode {
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
-            app.drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
+            app.drawLine(this.x, this.y, this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY, this.line);
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
-            let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
+            let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
             if (under_object.length >= 1) {
                 let uuid = app.getUuidByObject(under_object[0]);
                 if (uuid !== null && uuid !== this.UUID) {
@@ -413,8 +413,8 @@ class StartNode {
             app.selected_node_uuid = this.UUID;
         });
         this.part_main.addEventListener("pressmove", (evt) => {
-            this.x = snap(this.stage.mouseX) + this.stage.regX;
-            this.y = snap(this.stage.mouseY) + this.stage.regY;
+            this.x = (snap(this.stage.mouseX) + this.stage.regX);
+            this.y = (snap(this.stage.mouseY) + this.stage.regY);
         });
         this.part_main.addEventListener("pressup", (evt) => {
             console.log(this.UUID);
@@ -426,11 +426,11 @@ class StartNode {
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
-            app.drawLine(this.x, this.y, this.stage.mouseX, this.stage.mouseY, this.line);
+            app.drawLine(this.x, this.y, this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY, this.line);
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
-            let under_object = stage.getObjectsUnderPoint(stage.mouseX, stage.mouseY);
+            let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
             if (under_object.length >= 1) {
                 let object = under_object[0];
                 let uuid = app.getUuidByObject(object);
@@ -550,14 +550,26 @@ let app = new Vue({
         this.node_controller = new NodesController(this.stage, this.nodes);
     },
     methods: {
+        scaleUp: () => {
+            this.stage.scaleX = this.stage.scaleX + 0.1;
+            this.stage.scaleY = this.stage.scaleY + 0.1;
+        },
+        scaleDown: () => {
+            this.stage.scaleX = this.stage.scaleX - 0.1;
+            this.stage.scaleY = this.stage.scaleY - 0.1;
+        },
+        moveStage: (x, y) => {
+            this.stage.regX = this.stage.regX + x;
+            this.stage.regY = this.stage.regY + y;
+        },
         addMessageNode: () => {
-            this.node_controller.addMessageNode(this.stage.mouseX-500, this.stage.mouseY+50);
+            this.node_controller.addMessageNode(this.stage.mouseX-500+this.stage.regX, this.stage.mouseY+50+this.stage.regY);
         },
         addBranchNode: () => {
-            this.node_controller.addBranchNode(this.stage.mouseX-500, this.stage.mouseY+50);
+            this.node_controller.addBranchNode(this.stage.mouseX-500+this.stage.regX, this.stage.mouseY+50+this.stage.regY);
         },
         addEventNode: () => {
-            this.node_controller.addEventNode(this.stage.mouseX-500, this.stage.mouseY+50);
+            this.node_controller.addEventNode(this.stage.mouseX-500+this.stage.regX, this.stage.mouseY+50+this.stage.regY);
         },
         changeMessage: function() {
             let obj = this.getObjectByUuid(this.selected_node_uuid);

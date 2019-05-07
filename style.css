@@ -14,5 +14,17 @@
     height: 80px;
 }
 
+#scale-controller {
+    position: fixed;
+    right: 40px;
+    bottom: 10px;
+}
+
+#manip-controller {
+    position: fixed;
+    right: 40px;
+    bottom: 40px;
+}
+
 #nodeEditor {
 }

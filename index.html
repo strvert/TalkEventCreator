@@ -34,6 +34,24 @@
                 event
                 <button v-on:click="deleteNode">deleteNode</button>
             </template>
+            <div id="manip-controller">
+                <div>
+                    <button v-on:click="moveStage(0, 30)"> ↑ </button>
+                </div>
+                <div>
+                    <button v-on:click="moveStage(30, 0)"> ← </button>
+                    <button v-on:click="moveStage(-30, 0)"> → </button>
+                </div>
+                <div>
+                    <button v-on:click="moveStage(0, -30)"> ↓ </button>
+                </div>
+            </div>
+            <!--
+            <div id="scale-controller">
+                <button v-on:click="scaleUp"> + </button>
+                <button v-on:click="scaleDown"> - </button>
+            </div>
+            !-->
         </div>
     </div>
     <script src="scripts/main.js"></script>
