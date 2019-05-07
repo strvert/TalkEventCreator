@@ -9,7 +9,7 @@ window.onload = function () {
 };
 window.onchange = function () {
     fitCanvas();
-}
+};
 
 class NodesController {
     constructor(stage, nodes) {
@@ -39,7 +39,8 @@ class NodesController {
     }
 
     registerNode(node) {
-        this.nodes.push(node);
+        this.
+        nodes.push(node);
     }
 
     updateAll() {
@@ -80,6 +81,9 @@ class MessageNode {
         this.output.graphics.drawRoundRect(0, 0, this.sizeX*0.2, this.sizeY*0.25, 3);
         this.stage.addChild(this.output);
 
+        this.part_main.addEventListener("mousedown", (evt) => {
+            app.selected_node_uuid = this.UUID;
+        });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
             this.y = snap(this.stage.mouseY) + this.stage.regY;
@@ -164,8 +168,8 @@ class BranchNode {
         this.output.graphics.drawRoundRect(0, 0, this.sizeX*0.2, this.sizeY*0.25, 3);
         this.stage.addChild(this.output);
 
-        this.part_main.addEventListener("pressdown", (evt) => {
-            app.selected_node = this;
+        this.part_main.addEventListener("mousedown", (evt) => {
+            app.selected_node_uuid = this.UUID;
         });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
@@ -246,6 +250,9 @@ class StartNode {
         this.output.graphics.drawRoundRect(0, 0, this.sizeX*0.5, this.sizeY*0.5, 3);
         this.stage.addChild(this.output);
 
+        this.part_main.addEventListener("mousedown", (evt) => {
+            app.selected_node_uuid = this.UUID;
+        });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
             this.y = snap(this.stage.mouseY) + this.stage.regY;
@@ -313,6 +320,9 @@ class EndNode{
         this.input.graphics.drawRoundRect(0, 0, this.sizeX*0.5, this.sizeY*0.5, 3);
         this.stage.addChild(this.input);
 
+        this.part_main.addEventListener("mousedown", (evt) => {
+            app.selected_node_uuid = this.UUID;
+        });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX, 15) + this.stage.regX;
             this.y = snap(this.stage.mouseY, 15) + this.stage.regY;
@@ -341,17 +351,17 @@ class EndNode{
 let app = new Vue({
     el: '#app',
     data: {
-        nodes: null,
+        nodes: [],
         stage: null,
-        selected_node: null,
+        selected_node_uuid: "none",
         node_controller: null,
     },
     created: () => {
         createjs.Ticker.framerate = 60;
+        this.nodes = [];
     },
     mounted: () => {
         this.stage = new createjs.Stage("nodeEditor");
-        this.nodes = [];
         createjs.Ticker.addEventListener("tick", this.stage);
         this.node_controller = new NodesController(this.stage, this.nodes);
     },
@@ -372,13 +382,13 @@ let app = new Vue({
             return uuid;
         },
         getObjectByUuid: (uuid) => {
-            let object = null;
+            let obj = null;
             this.nodes.forEach((node) => {
                 if (node.UUID === uuid) {
-                    object = node;
+                    obj = node;
                 }
             });
-            return object;
+            return obj;
         },
         drawLine: (x1, y1, x2, y2, line) => {
             line.graphics.beginStroke("#768cff");
@@ -399,13 +409,14 @@ let app = new Vue({
         }
     },
     computed: {
-        selected_node_name: () => {
-            if (this.selected_node !== null) {
-                return this.selected_node.type;
-            } else {
-                return "";
+        selected_node_name: function () {
+            let obj = this.getObjectByUuid(this.selected_node_uuid);
+            let name = "none";
+            if (obj !== null) {
+                name = obj.type;
             }
-        }
+            return name;
+        },
     }
 });
 function generateUuid() {
