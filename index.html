@@ -14,11 +14,26 @@
             <div>control</div>
             <button v-on:click="addMessageNode">AddMessageNode</button>
             <button v-on:click="addBranchNode">AddBranchNode</button>
+            <button v-on:click="addEventNode">AddEventNode</button>
             <HR>
-            <div>{{ selected_node_name }}</div>
+            <div>{{ selected_node_type }}</div>
             <div>[{{ selected_node_uuid }}]</div>
+            <template v-if="selected_node_type === 'message'">
+                Text:
+                <textarea class="text_area" v-model="message_node_text" @input="changeMessage"></textarea>
+            </template>
+            <template v-if="selected_node_type === 'branch'">
+                <div v-for="n in 4">
+                    {{ n }}
+                    <textarea class="text_area" v-model="branch_node_choices[n-1]" @input="changeChoices"></textarea>
+                </div>
+            </template>
+            <template v-if="selected_node_type === 'event'">
+                event
+            </template>
+            <button v-on:click="deleteNode">deleteNode</button>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="scripts/main.js"></script>
 </body>
 </html>

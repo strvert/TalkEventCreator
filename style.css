@@ -9,5 +9,10 @@
     background-color: lavender;
 }
 
+.text_area {
+    width: 95%;
+    height: 80px;
+}
+
 #nodeEditor {
 }
