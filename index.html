@@ -10,6 +10,10 @@
 <body>
     <div id="app">
         <canvas id="nodeEditor"></canvas>
+        <div id="i-o">
+            <button v-on:click="exportCSV">Export</button>
+            <input type="file" @change="importCSV">
+        </div>
         <div id="prop">
             <div>control</div>
             <button v-on:click="addMessageNode">AddMessageNode</button>
@@ -31,7 +35,7 @@
                 </div>
             </template>
             <template v-if="selected_node_type === 'event'">
-                event
+                EventID:
                 <input type="number" v-model.number="event_node_event_id" @input="changeEventId">
             </template>
             <div id="manip-controller">

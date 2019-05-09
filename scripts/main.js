@@ -44,6 +44,7 @@ class NodesController {
 
     registerNode(node) {
         this.nodes.push(node);
+        return node;
     }
 }
 
@@ -56,7 +57,7 @@ class MessageNode {
         this.x = x;
         this.y = y;
         this.UUID = uuid;
-        this.nextNodeUUID = null;
+        this.nextNodeUUID = "";
         this.deletable = true;
 
         this.stage = stage;
@@ -102,7 +103,7 @@ class MessageNode {
         });
 
         this.output.addEventListener("mousedown", (evt) => {
-            this.nextNodeUUID = null;
+            this.nextNodeUUID = "";
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
@@ -149,7 +150,7 @@ class MessageNode {
     breakLink(uuid) {
         if (this.nextNodeUUID === uuid) {
             this.line.graphics.clear();
-            this.nextNodeUUID = null;
+            this.nextNodeUUID = "";
         }
     }
 }
@@ -197,7 +198,7 @@ class BranchNode {
             this.stage.setChildIndex(this.lines[i], 0);
 
             this.outputs[i].addEventListener("mousedown", (evt) => {
-                this.nextNodesUUID[i] = null;
+                this.nextNodesUUID[i] = "";
             });
             this.outputs[i].addEventListener("pressmove", (evt) => {
                 this.lines[i].graphics.clear();
@@ -268,7 +269,7 @@ class BranchNode {
         this.nextNodesUUID.forEach((nextUuid, i) => {
             if (nextUuid === uuid) {
                 this.lines[i].graphics.clear();
-                this.nextNodesUUID[i] = null;
+                this.nextNodesUUID[i] = "";
             }
         });
     }
@@ -283,7 +284,7 @@ class EventNode {
         this.x = x;
         this.y = y;
         this.UUID = uuid;
-        this.nextNodeUUID = null;
+        this.nextNodeUUID = "";
         this.deletable = true;
 
         this.stage = stage;
@@ -329,7 +330,7 @@ class EventNode {
         });
 
         this.output.addEventListener("mousedown", (evt) => {
-            this.nextNodeUUID = null;
+            this.nextNodeUUID = "";
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
@@ -376,7 +377,7 @@ class EventNode {
     breakLink(uuid) {
         if (this.nextNodeUUID === uuid) {
             this.line.graphics.clear();
-            this.nextNodeUUID = null;
+            this.nextNodeUUID = "";
         }
     }
 }
@@ -390,7 +391,7 @@ class StartNode {
         this.x = x;
         this.y = y;
         this.UUID = uuid;
-        this.nextNodeUUID = null;
+        this.nextNodeUUID = "";
         this.deletable = false;
 
         this.stage = stage;
@@ -423,7 +424,7 @@ class StartNode {
         });
 
         this.output.addEventListener("mousedown", (evt) => {
-            this.nextNodeUUID = null;
+            this.nextNodeUUID = "";
         });
         this.output.addEventListener("pressmove", (evt) => {
             this.line.graphics.clear();
@@ -467,7 +468,7 @@ class StartNode {
     breakLink(uuid) {
         if (this.nextNodeUUID === uuid) {
             this.line.graphics.clear();
-            this.nextNodeUUID = null;
+            this.nextNodeUUID = "";
         }
     }
 }
@@ -653,7 +654,194 @@ let app = new Vue({
         },
         deleteNode: function() {
             this.deleteNodeByUuid(this.selected_node_uuid);
+        },
+        generateTalkEventText: () => {
+            function getNodeObjectByType(type) {
+                let obj = null;
+                this.nodes.forEach((node, i) => {
+                    if (node.type === type) {
+                        obj = node;
+                    }
+                });
+                return obj;
+            }
+            function getObjectByUUID(uuid) {
+                let obj = null;
+                this.nodes.forEach((node) => {
+                    if (node.UUID === uuid) {
+                        obj = node;
+                    }
+                });
+                return obj;
+            }
+            function getUUIDByObject(obj) {
+                let uuid = null;
+                this.nodes.forEach((node) => {
+                    if (node.input === obj) {
+                        uuid = node.UUID;
+                    }
+                });
+                return uuid;
+            }
+            function formatNextNodeUUID(uuid) {
+                let node = getObjectByUUID(uuid);
+                if (node.type === "end") {
+                    return 'end';
+                }
+                return uuid;
+            }
+            function readNodeGraph(startUUID, depth = 0) {
+                let currentNode = getObjectByUUID(startUUID);
+                let text = "";
+                while (true) {
+                    if (currentNode.type === "end") {
+                        console.log(currentNode.type);
+                        return text;
+                    } else if (currentNode.type === "start") {
+                        console.log(currentNode.type);
+                        text += ",operator,next,data,pos\n";
+                        currentNode = getObjectByUUID(currentNode.nextNodeUUID);
+                    } else if (currentNode.type === "message") {
+                        console.log(currentNode.type);
+                        text += currentNode.UUID + "," + currentNode.type + "," +
+                            formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.text + "," +
+                            currentNode.x + ":" + currentNode.y + '\n';
+                        currentNode = getObjectByUUID(currentNode.nextNodeUUID);
+                    } else if (currentNode.type === "event") {
+                        console.log(currentNode.type);
+                        text += currentNode.UUID + "," + currentNode.type + "," +
+                            formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.eventId + "," +
+                            currentNode.x + ":" + currentNode.y + '\n';
+                        currentNode = getObjectByUUID(currentNode.nextNodeUUID);
+                    } else if (currentNode.type === "branch") {
+                        console.log(currentNode.type);
+                        text += currentNode.UUID + "," + currentNode.type + ",";
+                        for (let i = 0; i < 4; i++) {
+                            let tempText = currentNode.nextNodesUUID[i];
+                            if (tempText !== "") {
+                                text += formatNextNodeUUID(tempText);
+                            }
+                            if (i < 3) {
+                                text += ":"
+                            } else {
+                                text += ","
+                            }
+                        }
+                        text += currentNode.text + '|';
+                        for (let i = 0; i < 4; i++) {
+                            text += currentNode.choices[i];
+                            if (i < 3) {
+                                text += ":"
+                            } else {
+                                text += ",";
+                            }
+                        }
+                        text += currentNode.x + ":" + currentNode.y + '\n';
+                        for (let i = 0; i < 4; i++) {
+                            if (currentNode.nextNodesUUID[i] !== "") {
+                                text += readNodeGraph(currentNode.nextNodesUUID[i], depth+1);
+                            }
+                        }
+                        if (depth === 0) {
+                            console.log("ReadFinish");
+                            break;
+                        } else {
+                            return text;
+                        }
+                    } else {
+                        text += "undefinedNode;\n";
+                    }
+                }
+                return text;
+            }
+            let text = "ERROR";
+            let startNode = getNodeObjectByType("start");
+            let endNode = getNodeObjectByType("end");
+            text = readNodeGraph(startNode.UUID);
+            return text;
+        },
+        deleteAllNodes: () => {
+            this.nodes.forEach((node) => {
+                if (node.type !== "start" && node.type !== "end") {
+                    let obj = node;
+                    if (obj !== null) {
+                        obj.destroy();
+                        this.nodes.forEach((n) => {
+                            n.breakLink(node.UUID);
+                        });
+                    }
+
+                    console.log(this.nodes);
+                    this.nodes = this.nodes.filter((n) => {
+                        if (n.UUID !== node.UUID){
+                            return n;
+                        }
+                    });
+                    this.node_controller.nodes = this.nodes;
+                }
+            });
+        },
+        exportCSV: function () {
+            let filename = "file.csv";
+            let content = this.generateTalkEventText();
+            console.log(content);
+            let blob = new Blob([ content ], { "type" : "text/plain" });
+            window.URL = window.URL || window.webkitURL;
+            let link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        },
+        importCSV: function (e) {
+            this.deleteAllNodes();
+            let reader = new FileReader();
+            reader.readAsText(e.target.files[0]);
+            let texts = [];
+            reader.onload = (evt)=> {
+                let text = evt.target.result.toString();
+                texts = text.split('\n');
+                texts.shift();
+                texts.pop();
+
+                this.addNodeFromArray(texts);
+            };
+        },
+        addNodeFromArray: (arr)=> {
+            arr.forEach((row, i) => {
+                let data = row.split(',');
+                let pos = data[4].split(':');
+                let addedNode = null;
+                console.log(data);
+                switch (data[1]) {
+                    case "branch":
+                        addedNode = this.node_controller.registerNode(new BranchNode(pos[0], pos[1], data[0], this.stage));
+                        addedNode.update();
+                        break;
+                    case "event":
+                        addedNode = this.node_controller.registerNode(new EventNode(pos[0], pos[1], data[0], this.stage));
+                        if (data[2] === "end") {
+                            addedNode.nextNodeUUID = this.nodes[1].UUID;
+                        } else {
+                            addedNode.nextNodeUUID = data[2];
+                        }
+                        addedNode.eventId =  parseInt(data[3]);
+                        break;
+                    case "message":
+                        addedNode = this.node_controller.registerNode(new MessageNode(pos[0], pos[1], data[0], this.stage));
+                        if (data[2] === "end") {
+                            addedNode.nextNodeUUID = this.nodes[1].UUID;
+                        } else {
+                            addedNode.nextNodeUUID = data[2];
+                        }
+                        addedNode.text = data[3];
+                        break;
+                }
+                if (i === 0) {
+                    this.nodes[0].nextNodeUUID = data[0];
+                }
+            });
         }
+
     },
     computed: {
         selected_node_type: function () {

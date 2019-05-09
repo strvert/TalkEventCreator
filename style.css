@@ -9,6 +9,12 @@
     background-color: lavender;
 }
 
+#i-o {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}
+
 .text_area {
     width: 95%;
     height: 60px;
