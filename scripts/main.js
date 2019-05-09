@@ -656,6 +656,7 @@ let app = new Vue({
             this.deleteNodeByUuid(this.selected_node_uuid);
         },
         generateTalkEventText: () => {
+            let doneNodes = new Set();
             function getNodeObjectByType(type) {
                 let obj = null;
                 this.nodes.forEach((node, i) => {
@@ -703,15 +704,21 @@ let app = new Vue({
                         currentNode = getObjectByUUID(currentNode.nextNodeUUID);
                     } else if (currentNode.type === "message") {
                         console.log(currentNode.type);
-                        text += currentNode.UUID + "," + currentNode.type + "," +
-                            formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.text + "," +
-                            currentNode.x + ":" + currentNode.y + '\n';
+                        if (! doneNodes.has(currentNode.UUID)) {
+                            text += currentNode.UUID + "," + currentNode.type + "," +
+                                formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.text + "," +
+                                currentNode.x + ":" + currentNode.y + '\n';
+                            doneNodes.add(currentNode.UUID);
+                        }
                         currentNode = getObjectByUUID(currentNode.nextNodeUUID);
                     } else if (currentNode.type === "event") {
                         console.log(currentNode.type);
-                        text += currentNode.UUID + "," + currentNode.type + "," +
-                            formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.eventId + "," +
-                            currentNode.x + ":" + currentNode.y + '\n';
+                        if (! doneNodes.has(currentNode.UUID)) {
+                            text += currentNode.UUID + "," + currentNode.type + "," +
+                                formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.eventId + "," +
+                                currentNode.x + ":" + currentNode.y + '\n';
+                            doneNodes.add(currentNode.UUID);
+                        }
                         currentNode = getObjectByUUID(currentNode.nextNodeUUID);
                     } else if (currentNode.type === "branch") {
                         console.log(currentNode.type);
@@ -815,16 +822,16 @@ let app = new Vue({
                 switch (data[1]) {
                     case "branch":
                         addedNode = this.node_controller.registerNode(new BranchNode(pos[0], pos[1], data[0], this.stage));
-                        addedNode.update();
                         break;
                     case "event":
-                        addedNode = this.node_controller.registerNode(new EventNode(pos[0], pos[1], data[0], this.stage));
+                        addedNode = this.node_controller.registerNode(new EventNode(pos[0], pos[1], data[0], this.node_controller.stage));
                         if (data[2] === "end") {
                             addedNode.nextNodeUUID = this.nodes[1].UUID;
                         } else {
                             addedNode.nextNodeUUID = data[2];
                         }
                         addedNode.eventId =  parseInt(data[3]);
+                        addedNode.update();
                         break;
                     case "message":
                         addedNode = this.node_controller.registerNode(new MessageNode(pos[0], pos[1], data[0], this.stage));
