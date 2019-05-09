@@ -23,23 +23,23 @@ class NodesController {
     }
 
     addEndNode(x, y) {
-        this.registerNode(new EndNode(x, y, generateUuid(), this.stage));
+        return this.registerNode(new EndNode(x, y, generateUuid(), this.stage));
     }
 
     addStartNode(x, y) {
-        this.registerNode(new StartNode(x, y, generateUuid(), this.stage));
+        return this.registerNode(new StartNode(x, y, generateUuid(), this.stage));
     }
 
     addMessageNode(x, y) {
-        this.registerNode(new MessageNode(x, y, generateUuid(), this.stage));
+        return this.registerNode(new MessageNode(x, y, generateUuid(), this.stage));
     }
 
     addBranchNode(x, y) {
-        this.registerNode(new BranchNode(x, y, generateUuid(), this.stage));
+        return this.registerNode(new BranchNode(x, y, generateUuid(), this.stage));
     }
 
     addEventNode(x, y) {
-        this.registerNode(new EventNode(x, y, generateUuid(), this.stage));
+        return this.registerNode(new EventNode(x, y, generateUuid(), this.stage));
     }
 
     registerNode(node) {
@@ -111,7 +111,7 @@ class MessageNode {
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
-            let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
+            let under_object = this.stage.getObjectsUnderPoint(this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY);
             if (under_object.length >= 1) {
                 let uuid = app.getUuidByObject(under_object[0]);
                 if (uuid !== null && uuid !== this.UUID) {
@@ -206,7 +206,7 @@ class BranchNode {
             });
             this.outputs[i].addEventListener("pressup", (evt) => {
                 this.lines[i].graphics.clear();
-                let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
+                let under_object = this.stage.getObjectsUnderPoint(this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY);
                 if (under_object.length >= 1) {
                     let uuid = app.getUuidByObject(under_object[0]);
                     if (uuid !== null && uuid !== this.UUID) {
@@ -338,7 +338,7 @@ class EventNode {
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
-            let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
+            let under_object = this.stage.getObjectsUnderPoint(this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY);
             if (under_object.length >= 1) {
                 let uuid = app.getUuidByObject(under_object[0]);
                 if (uuid !== null && uuid !== this.UUID) {
@@ -348,6 +348,11 @@ class EventNode {
         });
 
         createjs.Ticker.addEventListener("tick", () => {this.update()});
+    }
+
+    updateOutput() {
+        this.output.x = (this.x - this.sizeX*0.1);
+        this.output.y = (this.y + this.sizeY*0.50);
     }
 
     update() {
@@ -432,7 +437,7 @@ class StartNode {
         });
         this.output.addEventListener("pressup", (evt) => {
             this.line.graphics.clear();
-            let under_object = stage.getObjectsUnderPoint(stage.mouseX+this.stage.regX, stage.mouseY+this.stage.regY);
+            let under_object = this.stage.getObjectsUnderPoint(this.stage.mouseX+this.stage.regX, this.stage.mouseY+this.stage.regY);
             if (under_object.length >= 1) {
                 let object = under_object[0];
                 let uuid = app.getUuidByObject(object);
@@ -821,20 +826,28 @@ let app = new Vue({
                 console.log(data);
                 switch (data[1]) {
                     case "branch":
-                        addedNode = this.node_controller.registerNode(new BranchNode(pos[0], pos[1], data[0], this.stage));
+                        addedNode = this.node_controller.addBranchNode(parseInt(pos[0]), parseInt(pos[1]));
+                        addedNode.UUID = data[0];
+                        let branchData = data[3].split('|');
+                        addedNode.text = branchData[0];
+                        addedNode.choices = branchData[1].split(':');
+                        addedNode.nextNodesUUID = data[2].split(':');
+
                         break;
                     case "event":
-                        addedNode = this.node_controller.registerNode(new EventNode(pos[0], pos[1], data[0], this.node_controller.stage));
+                        console.log(pos[0], pos[1]);
+                        addedNode = this.node_controller.addEventNode(parseInt(pos[0]), parseInt(pos[1]));
+                        addedNode.UUID = data[0];
                         if (data[2] === "end") {
                             addedNode.nextNodeUUID = this.nodes[1].UUID;
                         } else {
                             addedNode.nextNodeUUID = data[2];
                         }
                         addedNode.eventId =  parseInt(data[3]);
-                        addedNode.update();
                         break;
                     case "message":
-                        addedNode = this.node_controller.registerNode(new MessageNode(pos[0], pos[1], data[0], this.stage));
+                        addedNode = this.node_controller.addMessageNode(parseInt(pos[0]), parseInt(pos[1]));
+                        addedNode.UUID = data[0];
                         if (data[2] === "end") {
                             addedNode.nextNodeUUID = this.nodes[1].UUID;
                         } else {
