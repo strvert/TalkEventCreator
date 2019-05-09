@@ -63,6 +63,7 @@ class MessageNode {
         this.stage = stage;
 
         // ノード固有情報
+        this.speaker = "";
         this.text = "";
 
         // 描画情報
@@ -88,6 +89,7 @@ class MessageNode {
         this.part_main.addEventListener("mousedown", (evt) => {
             app.selected_node_uuid = this.UUID;
             app.message_node_text = this.text;
+            app.message_node_speaker = this.speaker;
         });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
@@ -170,6 +172,7 @@ class BranchNode {
         this.stage = stage;
 
         // ノード固有情報
+        this.speaker = "";
         this.choices = ["", "", "", ""];
         this.text = "";
 
@@ -220,6 +223,7 @@ class BranchNode {
             app.selected_node_uuid = this.UUID;
             app.branch_node_choices = this.choices;
             app.message_node_text = this.text;
+            app.message_node_speaker = this.speaker;
         });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
@@ -545,6 +549,7 @@ let app = new Vue({
         selected_node_uuid: "none",
         node_controller: null,
 
+        message_node_speaker: "",
         message_node_text: "",
         branch_node_choices: ["", "", "", ""],
         event_node_event_id: -1,
@@ -596,6 +601,12 @@ let app = new Vue({
             let obj = this.getObjectByUuid(this.selected_node_uuid);
             if (obj !== null) {
                 obj.eventId = this.event_node_event_id;
+            }
+        },
+        changeSpeaker: function() {
+            let obj = this.getObjectByUuid(this.selected_node_uuid);
+            if (obj !== null) {
+                obj.speaker = this.message_node_speaker;
             }
         },
         getUuidByObject: (obj) => {
@@ -711,7 +722,7 @@ let app = new Vue({
                         console.log(currentNode.type);
                         if (! doneNodes.has(currentNode.UUID)) {
                             text += currentNode.UUID + "," + currentNode.type + "," +
-                                formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.text + "," +
+                                formatNextNodeUUID(currentNode.nextNodeUUID) + "," + currentNode.speaker + "|" + currentNode.text + "," +
                                 currentNode.x + ":" + currentNode.y + '\n';
                             doneNodes.add(currentNode.UUID);
                         }
@@ -739,7 +750,7 @@ let app = new Vue({
                                 text += ","
                             }
                         }
-                        text += currentNode.text + '|';
+                        text += currentNode.speaker + '|' + currentNode.text + '|';
                         for (let i = 0; i < 4; i++) {
                             text += currentNode.choices[i];
                             if (i < 3) {
@@ -829,8 +840,9 @@ let app = new Vue({
                         addedNode = this.node_controller.addBranchNode(parseInt(pos[0]), parseInt(pos[1]));
                         addedNode.UUID = data[0];
                         let branchData = data[3].split('|');
-                        addedNode.text = branchData[0];
-                        addedNode.choices = branchData[1].split(':');
+                        addedNode.speaker = branchData[0];
+                        addedNode.text = branchData[1];
+                        addedNode.choices = branchData[2].split(':');
                         addedNode.nextNodesUUID = data[2].split(':');
 
                         break;
@@ -853,7 +865,9 @@ let app = new Vue({
                         } else {
                             addedNode.nextNodeUUID = data[2];
                         }
-                        addedNode.text = data[3];
+                        let messageData = data[3].split('|');
+                        addedNode.speaker = messageData[0];
+                        addedNode.text = messageData[1];
                         break;
                 }
                 if (i === 0) {

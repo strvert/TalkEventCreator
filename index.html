@@ -23,10 +23,14 @@
             <div>{{ selected_node_type }}</div>
             <div>[{{ selected_node_uuid }}]</div>
             <template v-if="selected_node_type === 'message'">
+                Speaker:
+                <input type="text" v-model="message_node_speaker" @input="changeSpeaker">
                 Text:
                 <textarea class="text_area" v-model="message_node_text" @input="changeMessage"></textarea>
             </template>
             <template v-if="selected_node_type === 'branch'">
+                Speaker:
+                <input type="text" v-model="message_node_speaker" @input="changeSpeaker">
                 Text:
                 <textarea class="text_area" v-model="message_node_text" @input="changeMessage"></textarea>
                 <div v-for="n in 4">
