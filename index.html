@@ -54,7 +54,10 @@
                     <button v-on:click="moveStage(0, -30)"> ↓ </button>
                 </div>
             </div>
-            <button id="node-delete-button" v-if="selected_node_deletable" v-on:click="deleteNode">deleteNode</button>
+            <div id="node-control-panel">
+                <button v-if="selected_node_deletable" v-on:click="deleteNode">deleteNode</button>
+                <button v-if="selected_node_duplicatable" v-on:click="duplicateNode">duplicateNode</button>
+            </div>
             <!--
             <div id="scale-controller">
                 <button v-on:click="scaleUp"> + </button>

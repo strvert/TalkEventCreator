@@ -32,10 +32,10 @@
     bottom: 40px;
 }
 
-#node-delete-button {
+#node-control-panel {
     position: fixed;
     bottom: 40px;
-    right: 200px;
+    right: 100px;
 }
 
 #nodeEditor {

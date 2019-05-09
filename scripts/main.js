@@ -59,6 +59,7 @@ class MessageNode {
         this.UUID = uuid;
         this.nextNodeUUID = "";
         this.deletable = true;
+        this.duplicatable = true;
 
         this.stage = stage;
 
@@ -168,6 +169,7 @@ class BranchNode {
         this.UUID = uuid;
         this.nextNodesUUID = ["", "", "", ""];
         this.deletable = true;
+        this.duplicatable = true;
 
         this.stage = stage;
 
@@ -290,6 +292,7 @@ class EventNode {
         this.UUID = uuid;
         this.nextNodeUUID = "";
         this.deletable = true;
+        this.duplicatable = true;
 
         this.stage = stage;
 
@@ -402,6 +405,7 @@ class StartNode {
         this.UUID = uuid;
         this.nextNodeUUID = "";
         this.deletable = false;
+        this.duplicatable = false;
 
         this.stage = stage;
 
@@ -492,6 +496,7 @@ class EndNode{
         this.y = y;
         this.UUID = uuid;
         this.deletable = false;
+        this.duplicatable = false;
 
         this.stage = stage;
 
@@ -671,6 +676,9 @@ let app = new Vue({
         deleteNode: function() {
             this.deleteNodeByUuid(this.selected_node_uuid);
         },
+        duplicateNode: function() {
+
+        },
         generateTalkEventText: () => {
             let doneNodes = new Set();
             function getNodeObjectByType(type) {
@@ -843,7 +851,14 @@ let app = new Vue({
                         addedNode.speaker = branchData[0];
                         addedNode.text = branchData[1];
                         addedNode.choices = branchData[2].split(':');
-                        addedNode.nextNodesUUID = data[2].split(':');
+                        let nextNodesUUID = data[2].split(':');
+                        nextNodesUUID.forEach((uuid, i) => {
+                            if (uuid === "end") {
+                                addedNode.nextNodesUUID[i] = this.nodes[1].UUID;
+                            } else {
+                                addedNode.nextNodesUUID[i] = uuid;
+                            }
+                        });
 
                         break;
                     case "event":
@@ -893,6 +908,14 @@ let app = new Vue({
                 deletable = obj.deletable;
             }
             return deletable;
+        },
+        selected_node_duplicatable: function () {
+            let obj = this.getObjectByUuid(this.selected_node_uuid);
+            let duplicatable = false;
+            if (obj !== null) {
+                duplicatable = obj.deletable;
+            }
+            return duplicatable;
         }
     }
 });
