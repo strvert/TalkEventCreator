@@ -42,6 +42,9 @@
                 EventID:
                 <input type="number" v-model.number="event_node_event_id" @input="changeEventId">
             </template>
+            <template v-if="selected_node_type === 'none'">
+                <p>ノードが選択されていません</p>
+            </template>
             <div id="manip-controller">
                 <div>
                     <button v-on:click="moveStage(0, 30)"> ↑ </button>

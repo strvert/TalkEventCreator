@@ -656,7 +656,6 @@ let app = new Vue({
                     obj = node;
                 }
             });
-            console.log(obj);
             if (obj !== null) {
                 obj.destroy();
                 this.nodes.forEach((node) => {
@@ -673,11 +672,38 @@ let app = new Vue({
             this.node_controller.nodes = this.nodes;
             console.log(this.nodes);
         },
+        duplicateNodeByUuid: (uuid) => {
+            let obj = null;
+            this.nodes.forEach((node) => {
+                if (node.UUID === uuid) {
+                    obj = node;
+                }
+            });
+            let dupObj;
+            switch (obj.type) {
+                case "event":
+                    dupObj = this.node_controller.addEventNode(obj.x+10, obj.y+10);
+                    dupObj.eventId = obj.eventId;
+                    break;
+                case "message":
+                    dupObj = this.node_controller.addMessageNode(obj.x+10, obj.y+10);
+                    dupObj.speaker = obj.speaker;
+                    dupObj.text = obj.text;
+                    break;
+                case "branch":
+                    dupObj = this.node_controller.addBranchNode(obj.x+10, obj.y+10);
+                    dupObj.speaker = obj.speaker;
+                    dupObj.text = obj.text;
+                    dupObj.choices = Object.assign({}, obj.choices);
+                    break;
+            }
+        },
         deleteNode: function() {
             this.deleteNodeByUuid(this.selected_node_uuid);
+            this.selected_node_uuid = "none";
         },
         duplicateNode: function() {
-
+            this.duplicateNodeByUuid(this.selected_node_uuid);
         },
         generateTalkEventText: () => {
             let doneNodes = new Set();
