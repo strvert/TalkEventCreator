@@ -746,28 +746,31 @@ let app = new Vue({
                         currentNode = getObjectByUUID(currentNode.nextNodeUUID);
                     } else if (currentNode.type === "branch") {
                         console.log(currentNode.type);
-                        text += currentNode.UUID + "," + currentNode.type + ",";
-                        for (let i = 0; i < 4; i++) {
-                            let tempText = currentNode.nextNodesUUID[i];
-                            if (tempText !== "") {
-                                text += formatNextNodeUUID(tempText);
+                        if (!doneNodes.has(currentNode.UUID)) {
+                            text += currentNode.UUID + "," + currentNode.type + ",";
+                            for (let i = 0; i < 4; i++) {
+                                let tempText = currentNode.nextNodesUUID[i];
+                                if (tempText !== "") {
+                                    text += formatNextNodeUUID(tempText);
+                                }
+                                if (i < 3) {
+                                    text += ":"
+                                } else {
+                                    text += ","
+                                }
                             }
-                            if (i < 3) {
-                                text += ":"
-                            } else {
-                                text += ","
+                            text += currentNode.speaker + '|' + currentNode.text + '|';
+                            for (let i = 0; i < 4; i++) {
+                                text += currentNode.choices[i];
+                                if (i < 3) {
+                                    text += ":"
+                                } else {
+                                    text += ",";
+                                }
                             }
+                            text += currentNode.x + ":" + currentNode.y + '\n';
+                            doneNodes.add(currentNode.UUID);
                         }
-                        text += currentNode.speaker + '|' + currentNode.text + '|';
-                        for (let i = 0; i < 4; i++) {
-                            text += currentNode.choices[i];
-                            if (i < 3) {
-                                text += ":"
-                            } else {
-                                text += ",";
-                            }
-                        }
-                        text += currentNode.x + ":" + currentNode.y + '\n';
                         for (let i = 0; i < 4; i++) {
                             if (currentNode.nextNodesUUID[i] !== "") {
                                 text += readNodeGraph(currentNode.nextNodesUUID[i], depth+1);
