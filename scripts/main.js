@@ -45,12 +45,6 @@ class NodesController {
     registerNode(node) {
         this.nodes.push(node);
     }
-
-    updateAll() {
-        this.nodes.forEach((node) => {
-            node.update();
-        })
-    }
 }
 
 class MessageNode {
@@ -63,6 +57,7 @@ class MessageNode {
         this.y = y;
         this.UUID = uuid;
         this.nextNodeUUID = null;
+        this.deletable = true;
 
         this.stage = stage;
 
@@ -169,11 +164,13 @@ class BranchNode {
         this.y = y;
         this.UUID = uuid;
         this.nextNodesUUID = ["", "", "", ""];
+        this.deletable = true;
 
         this.stage = stage;
 
         // ノード固有情報
         this.choices = ["", "", "", ""];
+        this.text = "";
 
         // 描画情報
         this.part_main = new createjs.Shape();
@@ -221,6 +218,7 @@ class BranchNode {
         this.part_main.addEventListener("mousedown", (evt) => {
             app.selected_node_uuid = this.UUID;
             app.branch_node_choices = this.choices;
+            app.message_node_text = this.text;
         });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
@@ -286,11 +284,12 @@ class EventNode {
         this.y = y;
         this.UUID = uuid;
         this.nextNodeUUID = null;
+        this.deletable = true;
 
         this.stage = stage;
 
         // ノード固有情報
-        this.eventId = 0;
+        this.eventId = -1;
 
         // 描画情報
         this.line = new createjs.Shape();
@@ -314,6 +313,7 @@ class EventNode {
 
         this.part_main.addEventListener("mousedown", (evt) => {
             app.selected_node_uuid = this.UUID;
+            app.event_node_event_id = this.eventId;
         });
         this.part_main.addEventListener("pressmove", (evt) => {
             this.x = snap(this.stage.mouseX) + this.stage.regX;
@@ -391,6 +391,7 @@ class StartNode {
         this.y = y;
         this.UUID = uuid;
         this.nextNodeUUID = null;
+        this.deletable = false;
 
         this.stage = stage;
 
@@ -480,6 +481,7 @@ class EndNode{
         this.x = x;
         this.y = y;
         this.UUID = uuid;
+        this.deletable = false;
 
         this.stage = stage;
 
@@ -539,6 +541,7 @@ let app = new Vue({
 
         message_node_text: "",
         branch_node_choices: ["", "", "", ""],
+        event_node_event_id: -1,
     },
     created: () => {
         createjs.Ticker.framerate = 60;
@@ -581,6 +584,12 @@ let app = new Vue({
             let obj = this.getObjectByUuid(this.selected_node_uuid);
             if (obj !== null) {
                 obj.choices = this.branch_node_choices;
+            }
+        },
+        changeEventId: function() {
+            let obj = this.getObjectByUuid(this.selected_node_uuid);
+            if (obj !== null) {
+                obj.eventId = this.event_node_event_id;
             }
         },
         getUuidByObject: (obj) => {
@@ -649,12 +658,20 @@ let app = new Vue({
     computed: {
         selected_node_type: function () {
             let obj = this.getObjectByUuid(this.selected_node_uuid);
-            let name = "none";
+            let type = "none";
             if (obj !== null) {
-                name = obj.type;
+                type = obj.type;
             }
-            return name;
+            return type;
         },
+        selected_node_deletable: function () {
+            let obj = this.getObjectByUuid(this.selected_node_uuid);
+            let deletable = false;
+            if (obj !== null) {
+                deletable = obj.deletable;
+            }
+            return deletable;
+        }
     }
 });
 function generateUuid() {

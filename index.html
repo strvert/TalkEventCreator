@@ -21,18 +21,18 @@
             <template v-if="selected_node_type === 'message'">
                 Text:
                 <textarea class="text_area" v-model="message_node_text" @input="changeMessage"></textarea>
-                <button v-on:click="deleteNode">deleteNode</button>
             </template>
             <template v-if="selected_node_type === 'branch'">
+                Text:
+                <textarea class="text_area" v-model="message_node_text" @input="changeMessage"></textarea>
                 <div v-for="n in 4">
                     {{ n }}
                     <textarea class="text_area" v-model="branch_node_choices[n-1]" @input="changeChoices"></textarea>
                 </div>
-                <button v-on:click="deleteNode">deleteNode</button>
             </template>
             <template v-if="selected_node_type === 'event'">
                 event
-                <button v-on:click="deleteNode">deleteNode</button>
+                <input type="number" v-model.number="event_node_event_id" @input="changeEventId">
             </template>
             <div id="manip-controller">
                 <div>
@@ -46,6 +46,7 @@
                     <button v-on:click="moveStage(0, -30)"> ↓ </button>
                 </div>
             </div>
+            <button id="node-delete-button" v-if="selected_node_deletable" v-on:click="deleteNode">deleteNode</button>
             <!--
             <div id="scale-controller">
                 <button v-on:click="scaleUp"> + </button>

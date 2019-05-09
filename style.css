@@ -1,7 +1,7 @@
 #prop {
     position: fixed;
     width: 300px;
-    height: 700px;
+    height: 100%;
     right: 10px;
     top: 10px;
     overflow-y: scroll;
@@ -11,7 +11,7 @@
 
 .text_area {
     width: 95%;
-    height: 80px;
+    height: 60px;
 }
 
 #scale-controller {
@@ -24,6 +24,12 @@
     position: fixed;
     right: 40px;
     bottom: 40px;
+}
+
+#node-delete-button {
+    position: fixed;
+    bottom: 40px;
+    right: 200px;
 }
 
 #nodeEditor {
