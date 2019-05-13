@@ -842,7 +842,7 @@ let app = new Vue({
             });
         },
         exportCSV: function () {
-            let filename = "file.csv";
+            let filename = "event.talkevent";
             let content = this.generateTalkEventText();
             console.log(content);
             let blob = new Blob([ content ], { "type" : "text/plain" });
