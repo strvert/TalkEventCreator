@@ -87,6 +87,10 @@ class MessageNode {
         this.output.graphics.drawRoundRect(0, 0, this.sizeX*0.2, this.sizeY*0.25, 3);
         this.stage.addChild(this.output);
 
+        this.label = new createjs.Text("", "20px sans-serif", "Black");
+        this.label.textAlign = "center";
+        this.stage.addChild(this.label);
+
         this.part_main.addEventListener("mousedown", (evt) => {
             app.selected_node_uuid = this.UUID;
             app.message_node_text = this.text;
@@ -136,6 +140,10 @@ class MessageNode {
         this.output.x = (this.x - this.sizeX*0.1);
         this.output.y = (this.y + this.sizeY*0.50);
 
+        this.label.text = this.speaker;
+        this.label.x = (this.x);
+        this.label.y = (this.y - this.sizeY / 4);
+
         let nextNode = app.getObjectByUuid(this.nextNodeUUID);
         if (nextNode !== null) {
             this.line.graphics.clear();
@@ -148,6 +156,7 @@ class MessageNode {
         this.stage.removeChild(this.input);
         this.stage.removeChild(this.output);
         this.stage.removeChild(this.line);
+        this.stage.removeChild(this.label);
     }
 
     breakLink(uuid) {
